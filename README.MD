@@ -1,5 +1,5 @@
 # FPS environment with Reinforcement Learning
-<img> <img src="https://github.com/Manjunatha-b/Portrait-Mode/blob/master/WorkingGif.gif" width="400"></img>
+<img> <img src="https://github.com/Manjunatha-b/FirstPersonShooterAI/blob/master/WorkingGif.gif" width="700"></img>
 ## Introduction
 
 The aim of this project is to create a reinforcement learning platform for learning first person shooters and include functions to retrieve observations such as depth maps and object bounding boxes, and to test different ML algorithms on the same.
