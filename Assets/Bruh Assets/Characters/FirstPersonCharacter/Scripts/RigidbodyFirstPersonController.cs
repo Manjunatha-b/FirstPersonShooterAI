@@ -1,8 +1,7 @@
 using System;
 using UnityEngine;
-using UnityStandardAssets.CrossPlatformInput;
-using UnityEngine.AI;
 using Unity.MLAgents;
+using Unity.MLAgents.Sensors;
 
 namespace UnityStandardAssets.Characters.FirstPerson
 {
@@ -33,7 +32,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 #endif
             
 
-            public void UpdateDesiredTargetSpeed(Vector2 input)
+            public void UpdateDesiredTargetSpeed(Vector2 input,float isrun)
             {
 	            if (input == Vector2.zero) return;
 				if (input.x > 0 || input.x < 0)
@@ -53,7 +52,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 					CurrentTargetSpeed = ForwardSpeed;
 				}
 #if !MOBILE_INPUT
-	            if (Input.GetKey(RunKey))
+	            if (isrun==1f)
 	            {
 		            CurrentTargetSpeed *= RunMultiplier;
 		            m_Running = true;
@@ -134,23 +133,48 @@ namespace UnityStandardAssets.Characters.FirstPerson
             mouseLook.Init (transform, cam.transform);
         }
 
-      /*  public override void Heuristic(float[] actionsOut)
+        public void BulletHitEnemy()
         {
-            Vector2 input 
-            actionsOut[0] = 
-        }*/
+            AddReward(100f);
+        }
 
-        private void Update()
+        public void BulletHitWall()
         {
-            RotateView();
 
-            if (CrossPlatformInputManager.GetButtonDown("Jump") && !m_Jump)
+        }
+
+       public override void Heuristic(float[] actionsOut)
+        {
+            actionsOut[0] = Input.GetAxis("Horizontal");
+            actionsOut[1] = Input.GetAxis("Vertical");
+            actionsOut[2] = !Input.GetKey(KeyCode.Mouse0)?0f:1f;
+            actionsOut[3] = !Input.GetKey(KeyCode.Space)?0f:1f;
+            actionsOut[4] = Input.GetAxis("Mouse X");
+            actionsOut[5] = Input.GetAxis("Mouse Y");
+            actionsOut[6] = !Input.GetKey(KeyCode.LeftShift)?0:1f;
+        }
+
+        public override void CollectObservations(VectorSensor sensor)
+        {
+            sensor.AddObservation(Time.timeScale);
+            sensor.AddObservation(m_Jumping);
+            sensor.AddObservation(this.transform.position);
+        }
+
+        public override void OnActionReceived(float[] vectorAction)
+        {
+            
+            mouseLook.yInp = vectorAction[4];
+            mouseLook.xInp = vectorAction[5];
+            movementSettings.UpdateDesiredTargetSpeed(new Vector2(vectorAction[0], vectorAction[1]), vectorAction[6]);
+            
+            if (vectorAction[3] == 1f && !m_Jump)
             {
                 m_Jump = true;
             }
 
             /////// My code from here on 
-            if (Input.GetMouseButtonDown(0))
+            if (vectorAction[2] == 1f)
             {
                 GameObject bulletObject = Instantiate(bulletPrefab);
                 bulletObject.transform.position = bulletSpawnLoc.transform.position;
@@ -158,34 +182,31 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 bullet lmao = bulletObject.GetComponent<bullet>();
                 lmao.assignParent(this);
             }
-        }
 
 
-        private void FixedUpdate()
-        {
             GroundCheck();
-            Vector2 input = GetInput();
+
+            Vector2 input = new Vector2(vectorAction[0],vectorAction[1]);
 
             if ((Mathf.Abs(input.x) > float.Epsilon || Mathf.Abs(input.y) > float.Epsilon) && (advancedSettings.airControl || m_IsGrounded))
             {
                 // always move along the camera forward as it is the direction that it being aimed at
-                Vector3 desiredMove = cam.transform.forward*input.y + cam.transform.right*input.x;
-                Time.timeScale = Mathf.Lerp(0.1f,1, 2*(Math.Abs(input.x) + Math.Abs(input.y)));
+                Vector3 desiredMove = cam.transform.forward * input.y + cam.transform.right * input.x;
+                Time.timeScale = Mathf.Lerp(0.1f, 1, 2 * (Math.Abs(input.x) + Math.Abs(input.y)));
                 desiredMove = Vector3.ProjectOnPlane(desiredMove, m_GroundContactNormal).normalized;
-                desiredMove.x = desiredMove.x*movementSettings.CurrentTargetSpeed;
-                desiredMove.z = desiredMove.z*movementSettings.CurrentTargetSpeed;
-                desiredMove.y = desiredMove.y*movementSettings.CurrentTargetSpeed;
+                desiredMove.x = desiredMove.x * movementSettings.CurrentTargetSpeed;
+                desiredMove.z = desiredMove.z * movementSettings.CurrentTargetSpeed;
+                desiredMove.y = desiredMove.y * movementSettings.CurrentTargetSpeed;
                 if (m_RigidBody.velocity.sqrMagnitude <
-                    (movementSettings.CurrentTargetSpeed*movementSettings.CurrentTargetSpeed))
+                    (movementSettings.CurrentTargetSpeed * movementSettings.CurrentTargetSpeed))
                 {
-                    m_RigidBody.AddForce(desiredMove*SlopeMultiplier(), ForceMode.Impulse);
+                    m_RigidBody.AddForce(desiredMove * SlopeMultiplier(), ForceMode.Impulse);
                 }
             }
 
             if (m_IsGrounded)
             {
                 m_RigidBody.drag = 5f;
-
                 if (m_Jump)
                 {
                     m_RigidBody.drag = 0f;
@@ -207,14 +228,25 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 if (m_PreviouslyGrounded && !m_Jumping)
                 {
                     StickToGroundHelper();
-                    
+
                 }
             }
             m_Jump = false;
-
-            
         }
 
+
+        private void Update()
+        {
+            RotateView();
+        }
+
+        public void FixedUpdate()
+        {
+            AddReward(-0.01f);
+            RequestDecision();
+        }
+
+        
 
         private float SlopeMultiplier()
         {
@@ -237,20 +269,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             }
         }
 
-
-        private Vector2 GetInput()
-        {
-            
-            Vector2 input = new Vector2
-                {
-                    x = CrossPlatformInputManager.GetAxis("Horizontal"),
-                    y = CrossPlatformInputManager.GetAxis("Vertical")
-                };
-			movementSettings.UpdateDesiredTargetSpeed(input);
-            return input;
-        }
-
-
         private void RotateView()
         {
             //avoids the mouse looking if the game is effectively paused
@@ -265,7 +283,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 // Rotate the rigidbody velocity to match the new direction that the character is looking
                 Quaternion velRotation = Quaternion.AngleAxis(transform.eulerAngles.y - oldYRotation, Vector3.up);
-                m_RigidBody.velocity = velRotation*m_RigidBody.velocity;
+                m_RigidBody.velocity = velRotation * m_RigidBody.velocity;
             }
         }
 
@@ -289,10 +307,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 m_Jumping = false;
             }
-        }
-        public void loghit()
-        {
-            Debug.Log("Hit");
         }
     }
 }

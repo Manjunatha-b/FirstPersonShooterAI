@@ -43,9 +43,10 @@ public class bullet : MonoBehaviour
                 Vector3 newpos;
                 newpos = new Vector3(Random.Range(27f, 15f), -1.95f, Random.Range(-14.33f,15.46f));
                 herebruh.transform.gameObject.transform.parent.transform.position = newpos;
-                parent.loghit();
+                parent.BulletHitEnemy();
             }
             Destroy(this.gameObject);
+            parent.BulletHitWall();
             hit = true;
         }
         if (Vector3.Distance(startpos, transform.position) > 250f)
