@@ -1,12 +1,14 @@
 using System;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
+using UnityEngine.AI;
+using Unity.MLAgents;
 
 namespace UnityStandardAssets.Characters.FirstPerson
 {
     [RequireComponent(typeof (Rigidbody))]
     [RequireComponent(typeof (CapsuleCollider))]
-    public class RigidbodyFirstPersonController : MonoBehaviour
+    public class RigidbodyFirstPersonController : Agent
     {
         public GameObject bulletPrefab;
         public GameObject bulletSpawnLoc;
@@ -132,6 +134,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
             mouseLook.Init (transform, cam.transform);
         }
 
+      /*  public override void Heuristic(float[] actionsOut)
+        {
+            Vector2 input 
+            actionsOut[0] = 
+        }*/
 
         private void Update()
         {
