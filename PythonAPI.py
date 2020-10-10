@@ -1,4 +1,7 @@
 import numpy as np
+import sys
+sys.path.insert(1,"./MLFiles")
+import MLFiles.DQN
 from mlagents_envs.environment import UnityEnvironment
 from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
 
@@ -21,18 +24,30 @@ class Driver:
             self.name = item[0]
             self.obs_shape = item[1].observation_shapes
             self.action_shape = item[1].action_shape
+        self.acts = [3,3,2,2,3,3,2]
+        self.act_dict = {}
+        self.tempset = set()
+        self.count = 0
+        self.GenerateActionTable(np.zeros(7),0)
 
     def generic_action(self):
         action = np.zeros((1,7))
         action[0][5] = -1
         self.env.set_actions(self.name,action)
         self.env.step()
-        
-    
+
+    def GenerateActionTable(self,array,curr):
+        if(curr>=7):
+            return 
+        for i in range(self.acts[curr]):
+            array[curr] = 1-i
+            if(tuple(array) not in self.tempset):
+                self.act_dict[self.count] = array
+                self.count+=1
+                self.tempset.add(tuple(array))
+            self.GenerateActionTable(list(array),curr+1)
 
 driver = Driver()
-while(True):
-    driver.generic_action()
 
 
 
