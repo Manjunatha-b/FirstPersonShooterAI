@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 sys.path.insert(1,"./MLFiles")
-import MLFiles.DQN
+from MLFiles.DQN import DQN
 from mlagents_envs.environment import UnityEnvironment
 from mlagents_envs.side_channel.engine_configuration_channel import EngineConfigurationChannel
 
@@ -30,11 +30,15 @@ class Driver:
         self.count = 0
         self.GenerateActionTable(np.zeros(7),0)
 
+        self.dqn = DQN(73,len(self.act_dict),1000)
+        self.dqn_targ = DQN(73,len(self.act_dict),1000)
+        
+
     def generic_action(self):
         action = np.zeros((1,7))
         action[0][5] = -1
         self.env.set_actions(self.name,action)
-        self.env.step()
+        return self.env.step()
 
     def GenerateActionTable(self,array,curr):
         if(curr>=7):
@@ -42,13 +46,25 @@ class Driver:
         for i in range(self.acts[curr]):
             array[curr] = 1-i
             if(tuple(array) not in self.tempset):
-                self.act_dict[self.count] = array
+                self.act_dict[self.count] = np.asarray(array).reshape(1,7)
                 self.count+=1
                 self.tempset.add(tuple(array))
             self.GenerateActionTable(list(array),curr+1)
+    
+    def PrepObs(self,state):
+        inp1 = np.asarray(state.obs[0][0])
+        inp2 = np.asarray(state.obs[1][0])
+        return np.concatenate((inp1,inp2))
 
 driver = Driver()
 
+while(True):
+    state,_ = driver.env.get_steps(driver.name)
+    state = driver.PrepObs(state)   
+    action = driver.dqn.act(state)
+    action = driver.act_dict[action]
+    driver.env.set_actions(driver.name, action)
+    driver.env.step()
 
 
 

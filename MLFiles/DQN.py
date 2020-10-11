@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+from torch.distributions import Categorical
 import numpy as np
 
 class DQN(nn.Module):
@@ -10,7 +11,8 @@ class DQN(nn.Module):
         self.model = nn.Sequential(
             nn.Linear(inp_dim,nodes),
             nn.Tanh(),
-            nn.Linear(nodes,out_dim)
+            nn.Linear(nodes,out_dim),
+            nn.Softmax(dim =-1)
         )
         self.learning_rate = 0.01
         self.gamma = 0.95
@@ -19,11 +21,10 @@ class DQN(nn.Module):
         raise NotImplementedError
 
     def act(self,observations):
+        observations = torch.from_numpy(observations).float()
         action = self.model(observations)
-        return action
+        action = Categorical(action)
+        action = action.sample()
+        return action.item()
 
-
-bruh = DQN(10,7,20)
-bruh = bruh.float()
-testinp = torch.from_numpy(np.ones((1,10))).float()
 
