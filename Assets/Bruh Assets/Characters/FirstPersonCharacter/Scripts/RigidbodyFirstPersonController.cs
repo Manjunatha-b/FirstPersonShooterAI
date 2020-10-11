@@ -97,6 +97,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
         private Vector3 m_GroundContactNormal;
         private bool m_Jump, m_PreviouslyGrounded, m_Jumping, m_IsGrounded;
 
+        public Vector3 ResetPos;
+        public Quaternion ResetRot;
+        public Quaternion ResetCamRot;
+
+        public float oldYRotation;
 
         public Vector3 Velocity
         {
@@ -131,6 +136,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
             m_RigidBody = GetComponent<Rigidbody>();
             m_Capsule = GetComponent<CapsuleCollider>();
             mouseLook.Init (transform, cam.transform);
+            ResetPos = m_RigidBody.transform.position;
+            ResetRot = m_RigidBody.transform.rotation;
+            ResetCamRot = cam.transform.localRotation;
         }
 
         public void BulletHitEnemy()
@@ -159,6 +167,19 @@ namespace UnityStandardAssets.Characters.FirstPerson
             sensor.AddObservation(Time.timeScale);
             sensor.AddObservation(m_Jumping);
             sensor.AddObservation(this.transform.position);
+            sensor.AddObservation(this.transform.rotation);
+        }
+
+
+        public override void OnEpisodeBegin()
+        {
+            base.OnEpisodeBegin();
+            m_RigidBody.transform.position = ResetPos;
+            m_RigidBody.transform.rotation = ResetRot;
+            transform.localRotation = ResetRot;
+            cam.transform.localRotation = ResetCamRot;
+            mouseLook.Init(transform, cam.transform);
+            
         }
 
         public override void OnActionReceived(float[] vectorAction)
@@ -275,7 +296,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             if (Mathf.Abs(Time.timeScale) < float.Epsilon) return;
 
             // get the rotation before it's changed
-            float oldYRotation = transform.eulerAngles.y;
+            oldYRotation = transform.eulerAngles.y;
 
             mouseLook.LookRotation (transform, cam.transform);
 

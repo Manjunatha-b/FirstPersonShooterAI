@@ -30,8 +30,8 @@ class Driver:
         self.count = 0
         self.GenerateActionTable(np.zeros(7),0)
 
-        self.dqn = DQN(73,len(self.act_dict),1000)
-        self.dqn_targ = DQN(73,len(self.act_dict),1000)
+        self.dqn = DQN(76,len(self.act_dict),1000)
+        self.dqn_targ = DQN(76,len(self.act_dict),1000)
         
 
     def generic_action(self):
@@ -51,20 +51,30 @@ class Driver:
                 self.tempset.add(tuple(array))
             self.GenerateActionTable(list(array),curr+1)
     
-    def PrepObs(self,state):
+    def GetObs(self):
+        state,_ = self.env.get_steps(self.name)
         inp1 = np.asarray(state.obs[0][0])
         inp2 = np.asarray(state.obs[1][0])
         return np.concatenate((inp1,inp2))
 
+    def GetAction(self,state):
+        action = self.dqn.act(state)
+        action = self.act_dict[action]
+        return action
+    
+    def DoStep(self,action):
+        self.env.set_actions(self.name,action)
+        self.env.step()
+
 driver = Driver()
 
+count = 0 
 while(True):
-    state,_ = driver.env.get_steps(driver.name)
-    state = driver.PrepObs(state)   
-    action = driver.dqn.act(state)
-    action = driver.act_dict[action]
-    driver.env.set_actions(driver.name, action)
-    driver.env.step()
+    state = driver.GetObs()  
+    print(state.shape)
+    action = driver.GetAction(state)
+    driver.DoStep(action)
+    
 
 
 

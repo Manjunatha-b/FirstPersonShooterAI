@@ -3395,7 +3395,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 5
+    VectorObservationSize: 9
     NumStackedVectorObservations: 1
     VectorActionSize: 07000000
     VectorActionDescriptions: []
@@ -13190,6 +13190,10 @@ PrefabInstance:
       propertyPath: bulletSpawnLoc
       value: 
       objectReference: {fileID: 933051595}
+    - target: {fileID: 11400004, guid: c6453f8e1f814744d8b94e5a6d1f9942, type: 3}
+      propertyPath: MaxStep
+      value: 500
+      objectReference: {fileID: 0}
     - target: {fileID: 13600000, guid: c6453f8e1f814744d8b94e5a6d1f9942, type: 3}
       propertyPath: m_Material
       value: 
