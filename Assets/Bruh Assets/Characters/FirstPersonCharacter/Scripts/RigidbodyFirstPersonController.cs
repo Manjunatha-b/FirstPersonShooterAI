@@ -101,7 +101,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
         public Quaternion ResetRot;
         public Quaternion ResetCamRot;
 
-        public float oldYRotation;
+        public GameObject[] enemies;
+        public Vector3[] ResetEnemyPos;
 
         public Vector3 Velocity
         {
@@ -139,6 +140,14 @@ namespace UnityStandardAssets.Characters.FirstPerson
             ResetPos = m_RigidBody.transform.position;
             ResetRot = m_RigidBody.transform.rotation;
             ResetCamRot = cam.transform.localRotation;
+
+            enemies = GameObject.FindGameObjectsWithTag("enemy");
+            ResetEnemyPos = new Vector3[enemies.Length];
+            for(int i = 0; i < enemies.Length; i++)
+            {
+                ResetEnemyPos[i] = new Vector3();
+                ResetEnemyPos[i] = (enemies[i].transform.position);
+            }
         }
 
         public void BulletHitEnemy()
@@ -179,7 +188,10 @@ namespace UnityStandardAssets.Characters.FirstPerson
             transform.localRotation = ResetRot;
             cam.transform.localRotation = ResetCamRot;
             mouseLook.Init(transform, cam.transform);
-            
+            for(int i = 0; i < enemies.Length; i++)
+            {
+                enemies[i].transform.position = ResetEnemyPos[i];
+            }
         }
 
         public override void OnActionReceived(float[] vectorAction)
@@ -296,7 +308,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             if (Mathf.Abs(Time.timeScale) < float.Epsilon) return;
 
             // get the rotation before it's changed
-            oldYRotation = transform.eulerAngles.y;
+            float oldYRotation = transform.eulerAngles.y;
 
             mouseLook.LookRotation (transform, cam.transform);
 

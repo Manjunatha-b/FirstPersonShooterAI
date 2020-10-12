@@ -746,7 +746,7 @@ ScriptsOnlyBuild:
     className: ActivationPlayableAsset
   - hash:
       serializedVersion: 2
-      Hash: e6410a0afcecc12ef933b1436163517e
+      Hash: fd15a845d827ba3f09058f9760c78bec
     assemblyName: Assembly-CSharp.dll
     namespaceName: UnityStandardAssets.Characters.FirstPerson
     className: RigidbodyFirstPersonController
