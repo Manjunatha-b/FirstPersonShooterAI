@@ -40,10 +40,12 @@ class ReplayBuffer:
         self.buffer = deque(maxlen = capacity)
 
     def push(self,state,action,reward,new_state,terminal):
-        #state     = np.expand_dims(state, 0)
-        #new_state = np.expand_dims(new_state, 0)
         self.buffer.append((state,action,reward,new_state,terminal))
 
     def sample(self,batch_size):
         states,actions,rewards,new_states,terminals = zip(*random.sample(self.buffer, batch_size))
         return states,actions,rewards,new_states,terminals
+
+dqn = DQN(77,648,1000)
+ret = dqn.act(np.zeros(77))
+print(ret)

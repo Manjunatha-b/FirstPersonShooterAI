@@ -89,6 +89,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
         public MovementSettings movementSettings = new MovementSettings();
         public MouseLook mouseLook = new MouseLook();
         public AdvancedSettings advancedSettings = new AdvancedSettings();
+       // public GameObject gun;
 
 
         private Rigidbody m_RigidBody;
@@ -199,6 +200,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             
             mouseLook.yInp = vectorAction[4];
             mouseLook.xInp = vectorAction[5];
+            
             movementSettings.UpdateDesiredTargetSpeed(new Vector2(vectorAction[0], vectorAction[1]), vectorAction[6]);
             
             if (vectorAction[3] == 1f && !m_Jump)
@@ -214,6 +216,16 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 bulletObject.transform.forward = cam.transform.forward;
                 bullet lmao = bulletObject.GetComponent<bullet>();
                 lmao.assignParent(this);
+                RaycastHit hit;
+                //Debug.DrawLine(cam.transform.position, cam.transform.forward);
+                if (Physics.Raycast(bulletObject.transform.position, cam.transform.forward, out hit, 25))
+                {
+                    if (hit.transform.tag == "enemy")
+                    {
+                       // Debug.Log("executed prehit ray");
+                        AddReward(0.5f);
+                    }
+                }
             }
 
 
@@ -225,7 +237,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 // always move along the camera forward as it is the direction that it being aimed at
                 Vector3 desiredMove = cam.transform.forward * input.y + cam.transform.right * input.x;
-                Time.timeScale = Mathf.Lerp(0.1f, 1, 2 * (Math.Abs(input.x) + Math.Abs(input.y)));
+                //Time.timeScale = Mathf.Lerp(0.1f, 1, 2 * (Math.Abs(input.x) + Math.Abs(input.y)));
                 desiredMove = Vector3.ProjectOnPlane(desiredMove, m_GroundContactNormal).normalized;
                 desiredMove.x = desiredMove.x * movementSettings.CurrentTargetSpeed;
                 desiredMove.z = desiredMove.z * movementSettings.CurrentTargetSpeed;
@@ -246,13 +258,13 @@ namespace UnityStandardAssets.Characters.FirstPerson
                     m_RigidBody.velocity = new Vector3(m_RigidBody.velocity.x, 0f, m_RigidBody.velocity.z);
                     m_RigidBody.AddForce(new Vector3(0f, movementSettings.JumpForce, 0f), ForceMode.Impulse);
                     m_Jumping = true;
-                    Time.timeScale = 1;
+                    //Time.timeScale = 1;
                 }
 
                 if (!m_Jumping && Mathf.Abs(input.x) < float.Epsilon && Mathf.Abs(input.y) < float.Epsilon && m_RigidBody.velocity.magnitude < 1f)
                 {
                     m_RigidBody.Sleep();
-                    Time.timeScale = Mathf.Lerp(0.1f, 1, 2 * (Math.Abs(input.x) + Math.Abs(input.y)));
+                    //Time.timeScale = Mathf.Lerp(0.1f, 1, 2 * (Math.Abs(input.x) + Math.Abs(input.y)));
                 }
             }
             else
@@ -261,7 +273,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 if (m_PreviouslyGrounded && !m_Jumping)
                 {
                     StickToGroundHelper();
-
                 }
             }
             m_Jump = false;
