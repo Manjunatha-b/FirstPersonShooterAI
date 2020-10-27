@@ -104,6 +104,8 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         public GameObject[] enemies;
         public Vector3[] ResetEnemyPos;
+        public int frameskip_count;
+        public int frame_count;
 
         public Vector3 Velocity
         {
@@ -141,7 +143,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             ResetPos = m_RigidBody.transform.position;
             ResetRot = m_RigidBody.transform.rotation;
             ResetCamRot = cam.transform.localRotation;
-
+            frameskip_count = 3;
             enemies = GameObject.FindGameObjectsWithTag("enemy");
             ResetEnemyPos = new Vector3[enemies.Length];
             for(int i = 0; i < enemies.Length; i++)
@@ -149,16 +151,6 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 ResetEnemyPos[i] = new Vector3();
                 ResetEnemyPos[i] = (enemies[i].transform.position);
             }
-        }
-
-        public void BulletHitEnemy()
-        {
-            AddReward(100f);
-        }
-
-        public void BulletHitWall()
-        {
-
         }
 
        public override void Heuristic(float[] actionsOut)
@@ -174,9 +166,9 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         public override void CollectObservations(VectorSensor sensor)
         {
-            sensor.AddObservation(Time.timeScale);
-            sensor.AddObservation(m_Jumping);
-            sensor.AddObservation(this.transform.position);
+            Vector3 bruh = this.transform.position;
+            sensor.AddObservation(bruh.x);
+            sensor.AddObservation(bruh.z);
             sensor.AddObservation(this.transform.rotation);
         }
 
@@ -193,6 +185,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
             {
                 enemies[i].transform.position = ResetEnemyPos[i];
             }
+            frame_count = 0;
         }
 
         public override void OnActionReceived(float[] vectorAction)
@@ -222,8 +215,11 @@ namespace UnityStandardAssets.Characters.FirstPerson
                 {
                     if (hit.transform.tag == "enemy")
                     {
-                       // Debug.Log("executed prehit ray");
-                        AddReward(0.5f);
+                        AddReward(1f);
+                    }
+                    else
+                    {
+                        AddReward(-0.3f);
                     }
                 }
             }
@@ -286,7 +282,7 @@ namespace UnityStandardAssets.Characters.FirstPerson
 
         public void FixedUpdate()
         {
-            AddReward(-0.01f);
+            AddReward(-0.02f);
             RequestDecision();
         }
 

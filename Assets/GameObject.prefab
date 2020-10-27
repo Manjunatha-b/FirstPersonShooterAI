@@ -12333,7 +12333,7 @@ MonoBehaviour:
   - enemy
   m_RaysPerDirection: 8
   m_MaxRayDegrees: 180
-  m_SphereCastRadius: 0.42
+  m_SphereCastRadius: 1
   m_RayLength: 16
   m_RayLayerMask:
     serializedVersion: 2
@@ -12356,7 +12356,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BrainParameters:
-    VectorObservationSize: 9
+    VectorObservationSize: 6
     NumStackedVectorObservations: 1
     VectorActionSize: 07000000
     VectorActionDescriptions: []

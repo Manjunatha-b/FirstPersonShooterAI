@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-file = open("./Logs/ppo1.txt",'r')
+file = open("./Logs/ppo2.txt",'r')
 rewards = []
 for item in file:
     bruh = file.readline()

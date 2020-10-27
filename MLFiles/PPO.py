@@ -3,6 +3,7 @@ import torch.nn as nn
 from torch.distributions import Categorical
 import gym
 import numpy as np
+from AC import ActorCritic
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -13,6 +14,7 @@ class Memory:
         self.logprobs = []
         self.rewards = []
         self.is_terminals = []
+        self.next_states = []
     
     def clear_memory(self):
         del self.actions[:]
@@ -20,55 +22,7 @@ class Memory:
         del self.logprobs[:]
         del self.rewards[:]
         del self.is_terminals[:]
-
-class ActorCritic(nn.Module):
-    def __init__(self, state_dim, action_dim, n_latent_var):
-        super(ActorCritic, self).__init__()
-
-        # actor
-        self.action_layer = nn.Sequential(
-                nn.Linear(state_dim, n_latent_var),
-                nn.Tanh(),
-                nn.Linear(n_latent_var, n_latent_var),
-                nn.Tanh(),
-                nn.Linear(n_latent_var, action_dim),
-                nn.Softmax(dim=-1)
-        )
-        
-        # critic
-        self.value_layer = nn.Sequential(
-            nn.Linear(state_dim, n_latent_var),
-            nn.Tanh(),
-            nn.Linear(n_latent_var, n_latent_var),
-            nn.Tanh(),
-            nn.Linear(n_latent_var, 1)
-        )
-        
-    def forward(self):
-        raise NotImplementedError
-        
-    def act(self, state, memory):
-        state = torch.from_numpy(state).float().to(device) 
-        action_probs = self.action_layer(state)
-        dist = Categorical(action_probs)
-        action = dist.sample()
-        memory.states.append(state)
-        memory.actions.append(action)
-        memory.logprobs.append(dist.log_prob(action))
-        
-        return action.item()
-    
-    def evaluate(self, state, action):
-        
-        action_probs = self.action_layer(state)
-        dist = Categorical(action_probs)
-        
-        action_logprobs = dist.log_prob(action)
-        dist_entropy = dist.entropy()
-        
-        state_value = self.value_layer(state)
-        
-        return action_logprobs, torch.squeeze(state_value), dist_entropy
+        del self.next_states[:]
         
 class PPO:
     def __init__(self, state_dim, action_dim, n_latent_var, lr, betas, gamma, K_epochs, eps_clip):
@@ -125,9 +79,3 @@ class PPO:
         
         # Copy new weights into old policy:
         self.policy_old.load_state_dict(self.policy.state_dict())
-
-# ppo = PPO(77,7,1024,0.002,(0.9,0.999),0.99,4,0.2)
-# memory = Memory()
-# inp = np.zeros((1,77))
-# action =  ppo.policy_old.act(inp,memory)
-# print(action)
