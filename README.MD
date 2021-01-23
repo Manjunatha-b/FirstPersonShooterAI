@@ -1,4 +1,4 @@
-# FPS environment with Reinforcement Learning
+# FPS environment
 <img> <img src="https://github.com/Manjunatha-b/FirstPersonShooterAI/blob/master/WorkingGif.gif" width="700"></img>
 ## Introduction
 
